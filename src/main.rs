@@ -10,6 +10,12 @@
  * `if let` construct is another convenient and concise idiom available to handle
  * enums in your code.
  */
+use std::any::type_name;
+
+/// Utility function to print type of a variable
+fn print_type_of<T>(_: &T) {
+    println!("{}", type_name::<T>())
+}
 
 /// # Enums and Pattern Matching Examples
 ///
@@ -26,6 +32,9 @@ fn main() {
 
     // Enum with methods
     enum_methods();
+
+    // The `Option` Enum and Its Advantages Over Null Values
+    option_type();
 }
 
 /// # Defining an Enum
@@ -235,4 +244,70 @@ impl Message {
             Message::ChangeColor(_, _, _) => unimplemented!(),
         }
     }
+}
+
+/// # The `Option` Enum and Its Advantages Over Null Values
+///
+/// Rust does not have nulls, but it does have an enum that can encode the
+/// concept of a value being present or absent. This enum is `Option<T>`, and
+/// it is defined by the standard library as follows:
+///
+///     enum Option<T> {
+///         None,
+///         Some(T),
+///     }
+/// The `Option<T>` enum is so useful that it’s even included in the prelude;
+/// you don’t need to bring it into scope explicitly. Its variants are also
+/// included in the prelude: you can use `Some` and `None` directly without the
+/// `Option::` prefix. The `Option<T>` enum is still just a regular enum, and
+/// `Some(T)` and `None` are still variants of type `Option<T>`.
+///
+/// The `<T>` syntax is a feature of Rust we haven’t talked about yet. It’s a
+/// generic type parameter, and we’ll cover generics in more detail in
+/// [Chapter 10][1].  For now, all you need to know is that `<T>` means that
+/// the `Some` variant of the `Option` enum can hold one piece of data of any
+/// type, and that each concrete type that gets used in place of `T` makes the
+/// overall `Option<T>` type a different type. Below in the function
+/// `option_type` are some examples of using `Option` values to hold number
+/// types and string types.
+///
+/// Note: for the `absent_number` variable in the `option_type` function below,
+/// Rust requires us to annotate the overall `Option` type:
+/// the compiler can’t infer the type that the corresponding `Some` enum
+/// variant will hold by looking only at a `None` value. Here, we tell Rust
+/// that we mean for `absent_number` to be of `type Option<i32>`.
+///
+/// [1]: https://doc.rust-lang.org/book/ch10-00-generics.html
+fn option_type() {
+    // Rust compiler can infer the Option<T> types for these variables
+    let some_number = Some(5);
+    let some_char = Some('e');
+
+    // Rust compiler can't infer the `Some` variant value for a variable
+    // defined initially with `None`.  It must be explicitly specified such as
+    // in the following example:
+    let absent_number: Option<i32> = None;
+
+    println!("`some_number` is: {:?}", some_number);
+    print!("Type of variable `some_number` is: ");
+    print_type_of(&some_number);
+    println!("`some_char` is: {:?}", some_char);
+    print!("Type of variable `some_char` is: ");
+    print_type_of(&some_char);
+    println!("`absent_number` is: {:?}", absent_number);
+    print!("Type of variable `absent_number` is: ");
+    print_type_of(&absent_number);
+
+    // When we have a `Some` value, we know that a value is present and the
+    // value is held within the `Some`. When we have a `None` value, in some
+    // sense it means the same thing as `null`: we don’t have a valid value.
+    // So why is having `Option<T>` any better than having `null`?
+    // In short, because `Option<T>` and `T` (where `T` can be any type) are
+    // different types, the compiler won’t let us use an `Option<T>` value as
+    // if it were definitely a valid value. For example, this code won’t
+    // compile, because it’s trying to add an `i8` to an `Option<i8>`:
+    let _x: i8 = 5;
+    let _y: Option<i8> = Option::Some(5);
+
+    // let sum = _x + _y; // Compile Error: cannot add `Option<i8>` to `i8`
 }
