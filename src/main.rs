@@ -17,6 +17,9 @@
 fn main() {
     // Defining an Enum
     defining_an_enum();
+
+    // Enum with associated `String` values
+    enum_string_values();
 }
 
 /// # Defining an Enum
@@ -74,3 +77,24 @@ enum IpAddrKind {
 /// `IpAddrKind`
 fn route_enum_kind(_ip_kind: IpAddrKind) {}
 
+/// # Enum with associated `String` values
+///
+/// Representing the IP with just an enum is more concise: rather than an enum
+/// inside a struct, we can put data directly into each enum variant. This new
+/// definition of the `IpAddr` enum says that both `V4` and `V6` variants will
+/// have associated `String` values
+/// We attach data to each variant of the enum directly, so there is no need
+/// for an extra struct.
+fn enum_string_values() {
+    let home = IpAddr::V4(String::from("127.0.0.1"));
+
+    let loopback = IpAddr::V6(String::from("::1"));
+    println!("`home` is: {:#?}", home);
+    println!("`loopback` is: {:#?}", loopback);
+}
+/// # `IpAddr` enum representing a specific address with a kind
+#[derive(Debug)]
+enum IpAddr {
+    V4(String),
+    V6(String),
+}
