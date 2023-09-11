@@ -125,3 +125,41 @@ enum IpAddrTypes {
     V4(u8, u8, u8, u8),
     V6(String),
 }
+
+/// # Rust standard library IpAddr example
+///
+/// The following example demonstrates how the Rust standard library implements
+/// IpAddr: An enum containing two associated stuct variants
+struct Ipv4Addr {
+    // --snip--
+}
+/// # Rust standard library IpAddr example
+///
+/// The following example demonstrates how the Rust standard library implements
+/// IpAddr: An enum containing two associated stuct variants
+struct Ipv6Addr {
+    // --snip--
+}
+
+/// # Implementation of IpAddr with different structs for each variant
+///
+/// This is how the rust standard library implements `IpAddr`:
+/// it has the exact enum and variants that we’ve defined and used, but it
+/// embeds the address data inside the variants in the form of two different
+/// structs, which are defined differently for each variant
+///
+/// This code illustrates that you can put any kind of data inside an enum
+/// variant: strings, numeric types, or structs, for example. You can even
+/// include another enum! Also, standard library types are often not much more
+/// complicated than what you might come up with.
+///
+/// Note that even though the standard library contains a definition for
+/// `IpAddr`, we can still create and use our own definition without conflict
+/// because we haven’t brought the standard library’s definition into our
+/// scope. We’ll talk more about bringing types into scope in [Chapter 7][1].
+///
+/// [1]: https://doc.rust-lang.org/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
+enum IpAddrStdLibExample {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}
