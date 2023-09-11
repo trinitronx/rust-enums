@@ -20,6 +20,9 @@ fn main() {
 
     // Enum with associated `String` values
     enum_string_values();
+
+    // Enum with different associated types
+    enum_different_types();
 }
 
 /// # Defining an Enum
@@ -96,5 +99,29 @@ fn enum_string_values() {
 #[derive(Debug)]
 enum IpAddr {
     V4(String),
+    V6(String),
+}
+/// # Enum with different associated types
+///
+/// There’s another advantage to using an enum rather than a struct: each
+/// variant can have different types and amounts of associated data. Version
+/// four IP addresses will always have four numeric components that will have
+/// values between `0` and `255`. If we wanted to store `V4` addresses as four
+/// `u8` values but still express `V6` addresses as one `String` value, we
+/// wouldn’t be able to with a struct. Enums handle this case with ease
+fn enum_different_types() {
+    let home = IpAddrTypes::V4(127, 0, 0, 1);
+
+    let loopback = IpAddrTypes::V6(String::from("::1"));
+    println!("`home` is: {:#?}", home);
+    println!("`loopback` is: {:#?}", loopback);
+}
+/// # Implementation of IpAddr with different associated types
+///
+/// An example alternative implementation of `IpAddr` using different
+/// associated types for `V4` and `V6` variants.
+#[derive(Debug)]
+enum IpAddrTypes {
+    V4(u8, u8, u8, u8),
     V6(String),
 }
