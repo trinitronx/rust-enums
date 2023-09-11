@@ -23,6 +23,9 @@ fn main() {
 
     // Enum with different associated types
     enum_different_types();
+
+    // Enum with methods
+    enum_methods();
 }
 
 /// # Defining an Enum
@@ -205,3 +208,31 @@ struct WriteMessage(String); // tuple struct
 ///
 /// Struct that could hold the same data that the `Message::ChangeColor` enum variant holds
 struct ChangeColorMessage(i32, i32, i32); // tuple struct
+
+/// # Enum with methods
+///
+/// There is one more similarity between enums and structs: just as we’re able
+/// to define methods on structs using `impl`, we’re also able to define
+/// methods on enums. Here’s a method named `call` that we could define on our
+/// `Message` enum
+fn enum_methods() {
+    let m = Message::Write(String::from("hello"));
+    m.call();
+}
+
+/// # Enum with methods example
+///
+/// An `impl` for `call` method on `Message` enum
+impl Message {
+    fn call(&self) {
+        // method body would be defined here
+        match self {
+            Self::Write(string) => {
+                println!("Message: {string}");
+            }
+            Message::Quit => unimplemented!(),
+            Message::Move { x, y } => unimplemented!(),
+            Message::ChangeColor(_, _, _) => unimplemented!(),
+        }
+    }
+}
