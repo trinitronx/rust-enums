@@ -72,7 +72,7 @@ enum IpAddrKind {
 }
 
 /// # Enum Values - function example
-/// 
+///
 /// Note that the variants of the enum are namespaced under its identifier, and
 /// we use a double colon to separate the two. This is useful because now both
 /// values `IpAddrKind::V4` and `IpAddrKind::V6` are of the same type:
@@ -163,3 +163,45 @@ enum IpAddrStdLibExample {
     V4(Ipv4Addr),
     V6(Ipv6Addr),
 }
+
+/// # Enum with wide variety of types embedded in its variants.
+///
+/// `Message` enum whose variants each store different amounts and types of
+/// values
+/// This enum has four variants with different types:
+///
+/// - `Quit` has no data associated with it at all.
+/// - `Move` has named fields, like a struct does.
+/// - `Write` includes a single `String`.
+/// - `ChangeColor` includes three `i32` values.
+///
+/// If we used the different structs, each of which has its own type, we
+/// couldn’t as easily define a function to take any of these kinds of messages
+/// as we could with the `Message` enum defined below, which is a single type.
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
+// The following structs could hold the same data that the preceding enum variants hold:
+/// Equivalent to `Message::Quit` enum variant
+///
+/// Struct that could hold the same data that the `Message::Quit` enum variant holds
+struct QuitMessage; // unit struct
+/// Equivalent to `Message::Move` enum variant
+///
+/// Struct that could hold the same data that the `Message:Move` enum variant holds
+struct MoveMessage {
+    x: i32,
+    y: i32,
+}
+/// Equivalent to `Message::Write` enum variant
+///
+/// Struct that could hold the same data that the `Message::Write` enum variant holds
+struct WriteMessage(String); // tuple struct
+/// Equivalent to `Message::ChangeColor` enum variant
+///
+/// Struct that could hold the same data that the `Message::ChangeColor` enum variant holds
+struct ChangeColorMessage(i32, i32, i32); // tuple struct
