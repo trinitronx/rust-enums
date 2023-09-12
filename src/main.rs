@@ -42,6 +42,9 @@ fn main() {
 
     // The `match` Control Flow Construct
     match_control_flow();
+
+    // Patterns That Bind to Values
+    match_control_flow_patterns();
 }
 
 /// # Defining an Enum
@@ -392,4 +395,176 @@ enum Coin {
     Nickel,
     Dime,
     Quarter,
+}
+
+/// # A `noop` macro to perform no operation
+///
+/// Source: [Reddit: best no op macro? assert!(true)? What do you think of this
+/// error handling pattern?][1]
+///
+/// [1]:
+///     https://www.reddit.com/r/rust/comments/8powj8/comment/e0czkeu/?utm_source=reddit&utm_medium=web2x&context=3
+macro_rules! noop {
+    () => {};
+}
+
+/// # Patterns That Bind to Values
+///
+/// Another useful feature of match arms is that they can bind to the parts of
+/// the values that match the pattern. This is how we can extract values out of
+/// enum variants.
+///
+/// As an example, let’s change one of our enum variants to hold data inside it.
+/// From 1999 through 2008, the United States minted quarters with different
+/// designs for each of the 50 states on one side. No other coins got state
+/// designs, so only quarters have this extra value. We can add this information
+/// to our `enum` by changing the `Quarter` variant to include a `UsState` value
+/// stored inside it, which we’ve done below.
+fn match_control_flow_patterns() {
+    let penny = Coin2::Penny;
+    let nickel = Coin2::Nickel;
+    let dime = Coin2::Dime;
+    let quarter = Coin2::Quarter(UsState::default());
+    let mut rng = thread_rng();
+    let vec_coins = Coin2::iter().collect::<Vec<_>>();
+    let mut random_coin = *vec_coins.choose(&mut rng).unwrap();
+    let vec_states = UsState::iter().collect::<Vec<_>>();
+    let random_state: &UsState;
+
+    match random_coin {
+        Coin2::Penny => {
+            noop!();
+        }
+        Coin2::Nickel => {
+            noop!();
+        }
+        Coin2::Dime => {
+            noop!();
+        }
+        Coin2::Quarter(_) => {
+            random_state = vec_states.choose(&mut rng).unwrap();
+            random_coin = Coin2::Quarter(*random_state);
+        }
+    }
+
+    println!(
+        "`penny` value_in_cents_state_quarters = {:?}",
+        value_in_cents_state_quarters(&penny)
+    );
+    println!(
+        "`nickel` value_in_cents_state_quarters = {:?}",
+        value_in_cents_state_quarters(&nickel)
+    );
+    println!(
+        "`dime` value_in_cents_state_quarters = {:?}",
+        value_in_cents_state_quarters(&dime)
+    );
+    println!(
+        "`quarter` value_in_cents_state_quarters = {:?}",
+        value_in_cents_state_quarters(&quarter)
+    );
+    println!(
+        "`random_coin` value_in_cents_state_quarters = {:?}",
+        value_in_cents_state_quarters(&random_coin)
+    );
+}
+
+/// #  Enum to represent `UsState`s for all 50 US State Quarters
+///
+/// `Quarter` variant to include a `UsState` value stored inside it
+#[derive(Debug, EnumIter, Clone, Copy)]
+enum UsState {
+    Alabama,
+    Alaska,
+    Arizona,
+    Arkansas,
+    California,
+    Colorado,
+    Connecticut,
+    Delaware,
+    Florida,
+    Georgia,
+    Hawaii,
+    Idaho,
+    Illinois,
+    Indiana,
+    Iowa,
+    Kansas,
+    Kentucky,
+    Louisiana,
+    Maine,
+    Maryland,
+    Massachusetts,
+    Michigan,
+    Minnesota,
+    Mississippi,
+    Missouri,
+    Montana,
+    Nebraska,
+    Nevada,
+    NewHampshire,
+    NewJersey,
+    NewMexico,
+    NewYork,
+    NorthCarolina,
+    NorthDakota,
+    Ohio,
+    Oklahoma,
+    Oregon,
+    Pennsylvania,
+    RhodeIsland,
+    SouthCarolina,
+    SouthDakota,
+    Tennessee,
+    Texas,
+    Utah,
+    Vermont,
+    Virginia,
+    Washington,
+    WestVirginia,
+    Wisconsin,
+    Wyoming,
+}
+
+/// # `Default` trait implementation for `UsState`
+///
+/// You have a better chance of finding `Virginia` quarters than any others.
+/// Mint records show nearly 1.6 billion were put into circulation.
+///
+/// Therefore, the `Coin2::Quarter(UsState::Virginia)` variant is the most
+/// probable to find and is set to be the `Default` variant
+impl Default for UsState {
+    fn default() -> Self {
+        UsState::Virginia
+    }
+}
+
+/// # Enum to represent `Coin`s and US State Quarters
+///
+/// A `Coin` enum in which the `Quarter` variant also holds a `UsState` value
+#[derive(Debug, EnumIter, Clone, Copy)]
+enum Coin2 {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+/// # Example of the `match` Control Flow Construct with Patterns That Bind to Values
+///
+/// A function that takes an unknown US coin and, in a similar way as a counting
+/// machine, determines which coin it is and returns its value in cents.
+///
+/// If a `Quarter` variant is matched, the `UsState` component of the tuple
+/// struct is printed
+fn value_in_cents_state_quarters(coin: &Coin2) -> u8 {
+    match coin {
+        Coin2::Penny => 1,
+        Coin2::Nickel => 5,
+        Coin2::Dime => 10,
+        Coin2::Quarter(state) => {
+            println!("State quarter from {:?}!", state);
+            25
+        }
+    }
 }
