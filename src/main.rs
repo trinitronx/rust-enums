@@ -370,7 +370,13 @@ fn value_in_cents(coin: &Coin) -> u8 {
     // An enum and a match expression that has the variants of the enum as its
     // patterns
     match coin {
-        Coin::Penny => 1,
+        Coin::Penny => {
+            // If you want to run multiple lines of code in a match arm, you
+            // must use curly brackets, and the comma following the arm is then
+            // optional.
+            println!("Lucky penny!");
+            1
+        }
         Coin::Nickel => 5,
         Coin::Dime => 10,
         Coin::Quarter => 25,
