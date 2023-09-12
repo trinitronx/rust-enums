@@ -11,6 +11,10 @@
  * enums in your code.
  */
 use std::any::type_name;
+extern crate rand;
+use rand::{seq::SliceRandom, thread_rng};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 /// Utility function to print type of a variable
 fn print_type_of<T>(_: &T) {
@@ -35,6 +39,9 @@ fn main() {
 
     // The `Option` Enum and Its Advantages Over Null Values
     option_type();
+
+    // The `match` Control Flow Construct
+    match_control_flow();
 }
 
 /// # Defining an Enum
@@ -310,4 +317,73 @@ fn option_type() {
     let _y: Option<i8> = Option::Some(5);
 
     // let sum = _x + _y; // Compile Error: cannot add `Option<i8>` to `i8`
+}
+
+/// # The `match` Control Flow Construct
+///
+/// Rust has an extremely powerful control flow construct called match that
+/// allows you to compare a value against a series of patterns and then execute
+/// code based on which pattern matches. Patterns can be made up of literal
+/// values, variable names, wildcards, and many other things; [Chapter 18][1]
+/// covers all the different kinds of patterns and what they do. The power of
+/// match comes from the expressiveness of the patterns and the fact that the
+/// compiler confirms that all possible cases are handled.
+///
+/// Think of a `match` expression as being like a coin-sorting machine: coins
+/// slide down a track with variously sized holes along it, and each coin falls
+/// through the first hole it encounters that it fits into. In the same way,
+/// values go through each pattern in a `match`, and at the first pattern the
+/// value “fits,” the value falls into the associated code block to be used
+/// during execution.
+///
+/// Speaking of coins, let’s use them as an example using `match`! We can write
+/// a function that takes an unknown US coin and, in a similar way as the
+/// counting machine, determines which coin it is and returns its value in
+/// cents, as shown in `value_in_cents()`.
+///
+/// [1]: https://doc.rust-lang.org/book/ch18-00-patterns.html
+fn match_control_flow() {
+    let penny = Coin::Penny;
+    let nickel = Coin::Nickel;
+    let dime = Coin::Dime;
+    let quarter = Coin::Quarter;
+    let mut rng = thread_rng();
+    let vec_coins = Coin::iter().collect::<Vec<_>>();
+    let random_coin = vec_coins.choose(&mut rng).unwrap();
+
+    println!("`penny` value_in_cents = {:?}", value_in_cents(&penny));
+    println!("`nickel` value_in_cents = {:?}", value_in_cents(&nickel));
+    println!("`dime` value_in_cents = {:?}", value_in_cents(&dime));
+    println!("`quarter` value_in_cents = {:?}", value_in_cents(&quarter));
+    println!(
+        "`random_coin` value_in_cents = {:?}",
+        value_in_cents(random_coin)
+    );
+}
+
+/// # value_in_cents(): Example of the `match` Control Flow Construct
+///
+/// A function that takes an unknown US coin and, in a similar way as a
+/// counting machine, determines which coin it is and returns its value in
+/// cents.
+fn value_in_cents(coin: &Coin) -> u8 {
+    // An enum and a match expression that has the variants of the enum as its
+    // patterns
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+
+/// # Enum to represent `Coin`s
+///
+/// An enum that has all variants of `Coin` types
+#[derive(Debug, EnumIter)]
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
 }
