@@ -51,6 +51,11 @@ fn main() {
 
     // Matches are Exhaustive
     plus_one_broken(Some(1));
+
+    // Catch-all Patterns and the `_` Placeholder
+    catch_all_patterns();
+    catch_all_patterns_underscore_placeholder();
+    catch_all_patterns_noop_catchall();
 }
 
 /// # Defining an Enum
@@ -648,4 +653,82 @@ fn plus_one_broken(x: Option<i32>) -> Option<i32> {
         Some(i) => Some(i + 1),
         None => todo!(), // If this is commented out, we get Compile Error!
     }
+}
+
+/// # Catch-all Patterns and the `_` Placeholder
+///
+/// Using enums, we can also take special actions for a few particular values,
+/// but for all other values take one default action. Imagine we’re implementing
+/// a game where, if you roll a 3 on a dice roll, your player doesn’t move, but
+/// instead gets a new fancy hat. If you roll a 7, your player loses a fancy
+/// hat. For all other values, your player moves that number of spaces on the
+/// game board. Here’s a `match` that implements that logic, with the result of
+/// the dice roll hardcoded rather than a random value, and all other logic
+/// represented by functions without bodies because actually implementing them
+/// is out of scope for this example.
+fn catch_all_patterns() {
+    let dice_roll = 9;
+    match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        other => move_player(other),
+    }
+
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
+    fn move_player(_num_spaces: u8) {}
+}
+
+/// # Catch-all Patterns and the `_` Placeholder
+///
+/// Rust also has a pattern we can use when we want a catch-all but don’t want
+/// to use the value in the catch-all pattern: `_` is a special pattern that
+/// matches any value and does not bind to that value. This tells Rust we aren’t
+/// going to use the value, so Rust won’t warn us about an unused variable.
+///
+/// Let’s change the rules of the game: now, if you roll anything other than a 3
+/// or a 7, you must roll again. We no longer need to use the catch-all value,
+/// so we can change our code to use `_` instead of the variable named `other`.
+///
+/// This example also meets the exhaustiveness requirement because we’re explicitly ignoring all other values in the last arm; we haven’t forgotten anything.
+fn catch_all_patterns_underscore_placeholder() {
+    let dice_roll = 9;
+    match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        _ => reroll(),
+    }
+
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
+    fn reroll() {}
+}
+
+/// # Catch-all Patterns and the `_` Placeholder
+///
+/// Finally, we’ll change the rules of the game one more time so that nothing
+/// else happens on your turn if you roll anything other than a 3 or a 7. We can
+/// express that by using the unit value (the empty tuple type we mentioned in
+/// “[The Tuple Type][1]” section) as the code that goes with the `_` arm
+///
+/// Here, we’re telling Rust explicitly that we aren’t going to use any other
+/// value that doesn’t match a pattern in an earlier arm, and we don’t want to
+/// run any code in this case.
+///
+/// There’s more about patterns and matching that we’ll cover in [Chapter
+/// 18][2]. For now, we’re going to move on to the `if let` syntax, which can be
+/// useful in situations where the `match` expression is a bit wordy.
+///
+/// [1]: https://doc.rust-lang.org/book/ch03-02-data-types.html#the-tuple-type
+/// [2]: https://doc.rust-lang.org/book/ch18-00-patterns.html
+fn catch_all_patterns_noop_catchall() {
+    let dice_roll = 9;
+    match dice_roll {
+        3 => add_fancy_hat(),
+        7 => remove_fancy_hat(),
+        _ => (),
+    }
+
+    fn add_fancy_hat() {}
+    fn remove_fancy_hat() {}
 }
