@@ -56,6 +56,11 @@ fn main() {
     catch_all_patterns();
     catch_all_patterns_underscore_placeholder();
     catch_all_patterns_noop_catchall();
+
+    // Concise Control Flow with `if let`
+    if_let_match_example();
+    if_let_example();
+    if_let_else_example();
 }
 
 /// # Defining an Enum
@@ -731,4 +736,142 @@ fn catch_all_patterns_noop_catchall() {
 
     fn add_fancy_hat() {}
     fn remove_fancy_hat() {}
+}
+
+/// # Concise Control Flow with `if let` - Equivalent `match` Example
+///
+/// The `if let` syntax lets you combine `if` and `let` into a less verbose way
+/// to handle values that match one pattern while ignoring the rest. Consider
+/// the program in `if_let_match_example()` that matches on an `Option<u8>`
+/// value in the `config_max` variable but only wants to execute code if the
+/// value is the `Some` variant.
+///
+/// If the value is `Some`, we print out the value in the `Some` variant by
+/// binding the value to the variable `max` in the pattern. We don’t want to do
+/// anything with the `None` value. To satisfy the `match` expression, we have
+/// to add `_ => ()` after processing just one variant, which is annoying
+/// boilerplate code to add.
+fn if_let_match_example() {
+    let config_max = Some(3u8);
+    match config_max {
+        Some(max) => println!("The maximum is configured to be {}", max),
+        _ => (),
+    }
+}
+
+/// # Concise Control Flow with `if let` - Example
+///
+/// Instead, we could write this in a shorter way using `if let`. The following
+/// code behaves the same as the `match` in `if_let_match_example()`
+///
+/// The syntax `if let` takes a pattern and an expression separated by an equal
+/// sign. It works the same way as a `match`, where the expression is given to
+/// the `match` and the pattern is its first arm. In this case, the pattern is
+/// `Some(max)`, and the `max` binds to the value inside the `Some`. We can then
+/// use `max` in the body of the `if let` block in the same way we used `max` in
+/// the corresponding `match` arm. The code in the `if let` block isn’t run if
+/// the value doesn’t match the pattern.
+///
+/// Using `if let` means less typing, less indentation, and less boilerplate
+/// code. However, you lose the exhaustive checking that `match` enforces.
+/// Choosing between `match` and `if let` depends on what you’re doing in your
+/// particular situation and whether gaining conciseness is an appropriate
+/// trade-off for losing exhaustive checking.
+///
+/// In other words, you can think of `if let` as syntax sugar for a `match` that
+/// runs code when the value matches one pattern and then ignores _all_ other
+/// values.
+fn if_let_example() {
+    let config_max = Some(3u8);
+    if let Some(max) = config_max {
+        println!("The maximum is configured to be {}", max);
+    }
+}
+
+/// # Concise Control Flow with `if let` - `if let .. else` Example
+/// We can include an `else` with an `if let`. The block of code that goes with
+/// the `else` is the same as the block of code that would go with the `_` case
+/// in the `match` expression that is equivalent to the `if let` and `else`.
+/// Recall the `Coin` enum definition in [`match_control_flow_patterns()`][1],
+/// where the `Quarter` variant also held a `UsState` value. If we wanted to
+/// count all non-quarter coins we see while also announcing the state of the
+/// quarters, we could do that with a `match` expression, like this:
+///
+///     let mut count = 0;
+///     match coin {
+///         Coin::Quarter(state) => println!("State quarter from {:?}!", state),
+///         _ => count += 1,
+///     }
+///
+/// If you have a situation in which your program has logic that is too verbose
+/// to express using a `match`, remember that `if let` is in your Rust toolbox
+/// as well
+///
+/// **Note:** The [Rust Book version of this][2] is much simpler, but this more complex example demonstrates generating a random `Coin2`, and also a random state `Quarter` if the generic `Quarter(Virginia)` default enum variant was drawn.
+///
+/// The trick for promoting lifetimes of the sometimes-generated random
+/// `Quarter` up into the outer scope beyond the loop is a modified version of
+/// Manish Goregaokar's [_"Prolonging Temporaries in Rust"_][3] example.
+///
+/// [1]: ./fn.match_control_flow_patterns.html
+/// [2]: https://doc.rust-lang.org/book/ch06-03-if-let.html#concise-control-flow-with-if-let
+/// [3]: https://manishearth.github.io/blog/2017/04/13/prolonging-temporaries-in-rust/
+fn if_let_else_example() {
+    let mut rng = thread_rng();
+    let vec_coins = Coin2::iter().collect::<Vec<_>>();
+    let vec_states = UsState::iter().collect::<Vec<_>>();
+    println!("if_let_else_example(): Counting coins...");
+    let mut count = 0;
+    for _i in 0..15 {
+        let mut coin = vec_coins.choose(&mut rng).unwrap();
+
+        let mut random_coin: &Coin2 = coin;
+        // initialize type of `random_state`, but only set it later if needed
+        let random_state: &UsState;
+
+        // outer scoped `Option` random coin initialized to `None`
+        // Only gets set for `Quarter`s
+        let mut _rnd_owned = None;
+
+        println!("Count is: {count}");
+        let maybe_random_coin = {
+            if let Coin2::Quarter(_default_state) = coin {
+                // Generate a random state when a `Quarter` was drawn
+                random_state = vec_states.choose(&mut rng).unwrap();
+
+                // This value only lives until the end of `if let` block
+                let _inner_scope_random_coin = Coin2::Quarter(*random_state);
+                // Wrap the randomly generated `Quarter` in `Some` to indicate
+                // we return its value
+                _rnd_owned = Some(Coin2::Quarter(*random_state));
+                if let &Coin2::Quarter(state) = &_inner_scope_random_coin {
+                    println!("State quarter from {:?}!", state);
+                }
+                // Note: If we print state here, it will **always** be
+                // `Virginia` (the enum's `Default`)
+                // println!("State quarter from {:?}!", _default_state);
+
+                // count += 1; // Rust Book example does not count the `Quarter`s, but we could
+                // do so here if we wanted
+
+                // Return an Option(&Coin2)
+                _rnd_owned.as_ref()
+            } else {
+                count += 1;
+                // We could just return the previous &Coin value, wrapped in an
+                // `Option::Some`:
+                // Some(coin)
+
+                // We didn't generate a new random coin, so no need to pass
+                // anything back.  This works as long as we handle conditionally
+                // setting coin in the outer scope below
+                None
+                // _rnd_owned.as_ref() // Also valid b/c initialized to `None`
+            }
+        };
+        coin = maybe_random_coin.unwrap_or(coin);
+        // Now we have access to the randomly generated State Quarter from the `if let` scope
+        println!("The `Coin` was: {:?}", coin);
+    }
+    println!("Total count of coins: {count}");
 }
